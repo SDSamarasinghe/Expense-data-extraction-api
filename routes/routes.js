@@ -61,6 +61,7 @@ async function analyzeDocument(filePath) {
 
   // Map extracted fields to your required format
   return {
+    docType: document.docType || "Unknown",
     vendor: document.fields.VendorName.content || "Unknown",
     date: document.fields.InvoiceDate?.valueDate || "Unknown",
     total: document.fields.InvoiceTotal?.valueCurrency?.amount || "Unknown",
@@ -68,7 +69,10 @@ async function analyzeDocument(filePath) {
       document.fields.InvoiceTotal?.valueCurrency.currencyCode || "Unknown",
     tax: document.fields.TotalTax?.valueCurrency?.amount || "Unknown",
     category: document.fields.Category?.value || "Unknown",
-    lineItems: document.fields.Items || [],
+    lineItems: document.fields.Items.valueArray || [],
+    confidence: document.confidence || "Unknown",
+    pageNumber: document.boundingRegions.pageNumber || [],
+    PaymentTerms: document.fields.PaymentTerm.content || "Unknown",
   };
 }
 
