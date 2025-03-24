@@ -1,3 +1,4 @@
+// routes/routes.js
 const express = require("express");
 const multer = require("multer");
 const fs = require("fs");
@@ -11,11 +12,10 @@ const {
 const { AzureKeyCredential } = require("@azure/core-auth");
 
 const router = express.Router();
-
 const key = process.env.AZURE_KEY;
 const endpoint = process.env.AZURE_ENDPOINT;
 
-// Configure multer for file uploads
+// Configure multer
 const upload = multer({
   dest: "uploads/",
   fileFilter: (req, file, cb) => {
@@ -31,12 +31,14 @@ const upload = multer({
   },
 });
 
-// Analyze document
+// Analyze document and extract specific fields
 async function analyzeDocument(filePath) {
   const client = DocumentIntelligence(endpoint, new AzureKeyCredential(key));
   const fileStream = fs.createReadStream(filePath);
+
+  // Use prebuilt-invoice model for structured data extraction
   const initialResponse = await client
-    .path("/documentModels/{modelId}:analyze", "prebuilt-read")
+    .path("/documentModels/{modelId}:analyze", "prebuilt-invoice")
     .post({
       contentType: "application/octet-stream",
       body: fileStream,
@@ -49,7 +51,25 @@ async function analyzeDocument(filePath) {
   const poller = getLongRunningPoller(client, initialResponse);
   const analyzeResult = (await poller.pollUntilDone()).body.analyzeResult;
 
-  return analyzeResult;
+  // Extract specific fields
+  const documents = analyzeResult?.documents;
+  const document = documents && documents[0];
+
+  if (!document) {
+    throw new Error("No documents found");
+  }
+
+  // Map extracted fields to your required format
+  return {
+    vendor: document.fields.VendorName.content || "Unknown",
+    date: document.fields.InvoiceDate?.valueDate || "Unknown",
+    total: document.fields.InvoiceTotal?.valueCurrency?.amount || "Unknown",
+    currency:
+      document.fields.InvoiceTotal?.valueCurrency.currencyCode || "Unknown",
+    tax: document.fields.TotalTax?.valueCurrency?.amount || "Unknown",
+    category: document.fields.Category?.value || "Unknown",
+    lineItems: document.fields.Items || [],
+  };
 }
 
 // Upload endpoint
@@ -61,12 +81,12 @@ router.post("/upload", upload.single("file"), async (req, res) => {
     }
 
     const filePath = path.join(__dirname, "../uploads", file.filename);
-    const analyzeResult = await analyzeDocument(filePath);
+    const extractedData = await analyzeDocument(filePath);
 
     // Clean up the uploaded file
     fs.unlinkSync(filePath);
 
-    res.json(analyzeResult);
+    res.json(extractedData);
   } catch (error) {
     console.error("An error occurred:", error);
     res.status(500).json({ error: "Failed to analyze document" });
