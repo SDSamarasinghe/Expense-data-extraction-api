@@ -1,0 +1,19 @@
+{
+  "name": "expense-data-extractor",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "betalaunch",
+  "license": "ISC",
+  "dependencies": {
+    "@azure-rest/ai-document-intelligence": "^1.0.0",
+    "@azure/cognitiveservices-computervision": "^7.1.0",
+    "@azure/core-auth": "^1.9.0",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "multer": "^1.4.5-lts.2"
+  }
+}
