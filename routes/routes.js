@@ -1,4 +1,3 @@
-// routes/routes.js
 const express = require("express");
 const multer = require("multer");
 const fs = require("fs");
@@ -10,6 +9,7 @@ const {
   isUnexpected,
 } = require("@azure-rest/ai-document-intelligence");
 const { AzureKeyCredential } = require("@azure/core-auth");
+const Invoice = require("../models/Invoice");
 
 const router = express.Router();
 const key = process.env.AZURE_KEY;
@@ -86,6 +86,10 @@ router.post("/upload", upload.single("file"), async (req, res) => {
 
     const filePath = path.join(__dirname, "../uploads", file.filename);
     const extractedData = await analyzeDocument(filePath);
+
+    // Save extracted data to MongoDB
+    const invoice = new Invoice(extractedData);
+    await invoice.save();
 
     // Clean up the uploaded file
     fs.unlinkSync(filePath);
