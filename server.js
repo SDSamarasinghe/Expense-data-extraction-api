@@ -1,6 +1,7 @@
 require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
+const cors = require("cors");
 const DocumentIntelligence =
   require("@azure-rest/ai-document-intelligence").default;
 const { AzureKeyCredential } = require("@azure/core-auth");
@@ -13,6 +14,7 @@ const port = process.env.PORT || 3000;
 
 const app = express();
 
+app.use(cors()); // Enable CORS
 app.use(express.json());
 
 // connect to mongodb
