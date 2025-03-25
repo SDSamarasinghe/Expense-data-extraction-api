@@ -9,13 +9,13 @@ const routes = require("./routes/routes");
 const key = process.env.AZURE_KEY;
 const endpoint = process.env.AZURE_ENDPOINT;
 const mongoUri = process.env.MONGO_DB_URI;
+const port = process.env.PORT || 3000;
 
 const app = express();
-const port = 3000;
 
 app.use(express.json());
 
-// connct to mongodb
+// connect to mongodb
 mongoose
   .connect(mongoUri, {
     useNewUrlParser: true,
