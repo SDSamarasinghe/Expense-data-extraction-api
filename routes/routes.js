@@ -131,6 +131,7 @@ router.get("/invoices/:id", async (req, res) => {
 });
 
 router.put("/invoices/:id/category", async (req, res) => {
+  console.log("🚀 ~ router.put ~ req:", req);
   try {
     const { id } = req.params;
     const { category } = req.body;

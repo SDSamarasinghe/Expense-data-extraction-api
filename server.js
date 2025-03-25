@@ -13,7 +13,9 @@ const mongoUri = process.env.MONGO_DB_URI;
 const app = express();
 const port = 3000;
 
-// conetct to moongodb
+app.use(express.json());
+
+// connct to mongodb
 mongoose
   .connect(mongoUri, {
     useNewUrlParser: true,
@@ -27,7 +29,7 @@ mongoose
     process.exit(1);
   });
 
-// check creadentials
+// check credentials
 async function verifyCredentials() {
   try {
     const client = DocumentIntelligence(endpoint, new AzureKeyCredential(key));
