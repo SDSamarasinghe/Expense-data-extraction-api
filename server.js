@@ -1,4 +1,3 @@
-// filepath: /Users/macbook/Expense-data-extractor/server.js
 require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
@@ -11,11 +10,10 @@ const key = process.env.AZURE_KEY;
 const endpoint = process.env.AZURE_ENDPOINT;
 const mongoUri = process.env.MONGO_DB_URI;
 
-// Initialize Express app
 const app = express();
 const port = 3000;
 
-// Connect to MongoDB
+// conetct to moongodb
 mongoose
   .connect(mongoUri, {
     useNewUrlParser: true,
@@ -29,7 +27,7 @@ mongoose
     process.exit(1);
   });
 
-// Verify credentials
+// check creadentials
 async function verifyCredentials() {
   try {
     const client = DocumentIntelligence(endpoint, new AzureKeyCredential(key));
@@ -41,10 +39,8 @@ async function verifyCredentials() {
   }
 }
 
-// Use routes
 app.use("/", routes);
 
-// Start server
 app.listen(port, async () => {
   await verifyCredentials();
   console.log(`Server running on port ${port}`);
