@@ -15,7 +15,7 @@ const router = express.Router();
 const key = process.env.AZURE_KEY;
 const endpoint = process.env.AZURE_ENDPOINT;
 
-// Configure multer
+// configure multer
 const upload = multer({
   dest: "uploads/",
   fileFilter: (req, file, cb) => {
@@ -31,7 +31,7 @@ const upload = multer({
   },
 });
 
-// Analyze document and extract specific fields
+// analyze document and extract specific fields
 async function analyzeDocument(filePath) {
   const client = DocumentIntelligence(endpoint, new AzureKeyCredential(key));
   const fileStream = fs.createReadStream(filePath);
@@ -51,7 +51,7 @@ async function analyzeDocument(filePath) {
   const poller = getLongRunningPoller(client, initialResponse);
   const analyzeResult = (await poller.pollUntilDone()).body.analyzeResult;
 
-  // Extract specific fields
+  // extract the custom fields
   const documents = analyzeResult?.documents;
   const document = documents && documents[0];
 
@@ -59,7 +59,7 @@ async function analyzeDocument(filePath) {
     throw new Error("No documents found");
   }
 
-  // Map extracted fields to your required format
+  // map the extracted fields to the Invoice model
   return {
     docType: document.docType || "Unknown",
     vendor: document.fields.VendorName.content || "Unknown",
@@ -76,7 +76,7 @@ async function analyzeDocument(filePath) {
   };
 }
 
-// Upload endpoint
+// file upload
 router.post("/upload", upload.single("file"), async (req, res) => {
   try {
     const { file } = req;
@@ -87,17 +87,29 @@ router.post("/upload", upload.single("file"), async (req, res) => {
     const filePath = path.join(__dirname, "../uploads", file.filename);
     const extractedData = await analyzeDocument(filePath);
 
-    // Save extracted data to MongoDB
+    // save extracted data to mongodb
     const invoice = new Invoice(extractedData);
     await invoice.save();
 
-    // Clean up the uploaded file
+    // clean up the uploaded file
     fs.unlinkSync(filePath);
 
     res.json(extractedData);
   } catch (error) {
     console.error("An error occurred:", error);
     res.status(500).json({ error: "Failed to analyze document" });
+  }
+});
+
+// get all invoices
+router.get("/invoices", async (req, res) => {
+  try {
+    const invoices = await Invoice.find();
+    console.log("🚀 ~ router.get ~ invoices:", invoices);
+    res.json(invoices);
+  } catch (error) {
+    console.error("An error occurred:", error);
+    res.status(500).json({ error: "Failed to fetch invoices" });
   }
 });
 
