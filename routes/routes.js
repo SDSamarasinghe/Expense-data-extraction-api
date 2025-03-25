@@ -113,4 +113,47 @@ router.get("/invoices", async (req, res) => {
   }
 });
 
+// get single invoice by id
+router.get("/invoices/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const invoice = await Invoice.findById(id);
+
+    if (!invoice) {
+      return res.status(404).json({ error: "Invoice not found" });
+    }
+
+    res.json(invoice);
+  } catch (error) {
+    console.error("An error occurred:", error);
+    res.status(500).json({ error: "Failed to fetch invoice" });
+  }
+});
+
+router.put("/invoices/:id/category", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { category } = req.body;
+
+    if (!category) {
+      return res.status(400).json({ error: "Category is required" });
+    }
+
+    const invoice = await Invoice.findByIdAndUpdate(
+      id,
+      { category },
+      { new: true }
+    );
+
+    if (!invoice) {
+      return res.status(404).json({ error: "Invoice not found" });
+    }
+
+    res.json(invoice);
+  } catch (error) {
+    console.error("An error occurred:", error);
+    res.status(500).json({ error: "Failed to update category" });
+  }
+});
+
 module.exports = router;
